@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  discovery:
+    build: ./discovery-server
+    ports: ['8761:8761']
+
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ['5432:5432']
+
+  auth-service:
+    build: ./auth-service
+    depends_on: ['discovery','postgres']
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+    ports: ['8081:8081']
+
+  user-profile-service:
+    build: ./user-profile-service
+    depends_on: ['discovery','postgres']
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_SECRET: your-jwt-secret
+      SPRING_SECURITY_JWT_SECRET: your-jwt-secret
+    ports: ['8082:8082']
+
+  api-gateway:
+    build: ./api-gateway
+    depends_on: ['discovery']
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+    ports: ['8080:8080']
+
+networks:
+  default:
+    driver: bridge
