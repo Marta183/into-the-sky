@@ -5,27 +5,26 @@ import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "external_project", schema = "public")
 public class ExternalProject {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Column(name = "id", length = 200, nullable = false, updatable = false)
+    private String id;
 
     @Column(name = "name", nullable = false, length = 120)
     private String name;
 
-    @ManyToMany
-    @JoinTable(name = "user_external_project",
-            joinColumns = @JoinColumn(name = "external_project_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @ManyToMany(mappedBy="externalProjects", fetch=FetchType.LAZY)
     private Set<User> users = new HashSet<>();
 
+    public ExternalProject(String name) {
+        this.id   = UUID.randomUUID().toString();
+        this.name = name;
+    }
 }

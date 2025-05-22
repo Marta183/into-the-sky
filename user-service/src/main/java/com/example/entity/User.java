@@ -1,18 +1,14 @@
 package com.example.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user", schema = "public", uniqueConstraints = {
@@ -33,7 +29,11 @@ public class User {
     @Column(name = "name", length = 120)
     private String name;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinTable(name = "user_external_project",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "external_project_id"))
     private Set<ExternalProject> externalProjects = new HashSet<>();
 
 }
