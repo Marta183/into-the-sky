@@ -1,11 +1,7 @@
 package com.example.security.auth;
 
-import com.example.dto.AuthenticationRequest;
-import com.example.dto.AuthenticationResponse;
-import com.example.dto.RefreshTokenRequest;
-import com.example.dto.user.UserCreateRequest;
+import com.example.dto.*;
 import com.example.dto.user.UserDto;
-import com.example.security.UserInfoDetailsService;
 import com.example.security.jwt.JwtProvider;
 import com.example.service.UserService;
 import io.jsonwebtoken.JwtException;
@@ -16,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-//        log.debug("Login for user {}", authRequest.email());
+        log.debug("Attempting login for user: {}", request.email());
 
         try {
             Authentication auth = authManager.authenticate(
@@ -39,42 +36,52 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     request.password()
                 )
             );
-            log.info("User {} logged in successfully", request.email());
+            log.info("User {} authenticated successfully", request.email());
 
             String accessToken = jwtProvider.generateAccessToken(auth.getName());
             String refreshToken = jwtProvider.generateRefreshToken(auth.getName());
+
+            log.debug("Access and refresh tokens generated for user '{}'", request.email());
             return new AuthenticationResponse(accessToken, refreshToken);
 
-        } catch (BadCredentialsException e) {
+        } catch (AuthenticationException e) {
+            log.warn("Authentication failed for user '{}': {}", request.email(), e.getMessage());
             throw new BadCredentialsException("Invalid email or password");
         }
     }
 
     @Override
     public AuthenticationResponse signup(UserCreateRequest request) {
-//        log.debug("{} registration by email {}", ENTITY_CLASS_NAME, request.email());
+        log.debug("Registering new user with email: {}", request.email());
+
         UserDto userDto = userService.createUser(request);
+        log.info("New user registered with email: {}", userDto.email());
 
         // auto-login after signup
-        return login(
+        AuthenticationResponse response = login(
             new AuthenticationRequest(request.email(), request.password())
         );
-//        log.debug("New user saved in DB with email {}", userDto.email());
+
+        log.debug("Auto-login after signup completed for user: {}", request.email());
+        return response;
     }
 
     @Override
     public AuthenticationResponse refreshAccessToken(RefreshTokenRequest request) {
         String refreshToken = request.refreshToken();
         if (!jwtProvider.isTokenValid(refreshToken)) {
-            throw new CredentialsExpiredException("Refresh token expired");
+            log.warn("Invalid refresh token attempt");
+            throw new CredentialsExpiredException("Refresh token expired or invalid");
         }
+
+        String username;
         try {
-            jwtProvider.extractAllClaims(refreshToken);
+            username = jwtProvider.extractUsername(request.refreshToken());
         } catch (JwtException e) {
+            log.error("Refresh token extraction failed", e.getMessage() );
             throw new BadCredentialsException("Invalid refresh token");
         }
-        String username = jwtProvider.extractUsername(request.refreshToken());
         String accessToken = jwtProvider.generateAccessToken(username);
-        return new AuthenticationResponse(accessToken, request.refreshToken());
+        return new AuthenticationResponse(accessToken, refreshToken);
     }
 }
