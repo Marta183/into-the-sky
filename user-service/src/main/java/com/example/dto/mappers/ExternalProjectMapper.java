@@ -1,10 +1,7 @@
 package com.example.dto.mappers;
 
-import com.example.dto.user.ExternalProjectDto;
-import com.example.dto.user.UserCreateRequest;
-import com.example.dto.user.UserDto;
+import com.example.dto.ExternalProjectDto;
 import com.example.entity.ExternalProject;
-import com.example.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants.ComponentModel;
 

@@ -1,9 +1,9 @@
 package com.example.controller;
 
-import com.example.dto.AuthenticationRequest;
-import com.example.dto.AuthenticationResponse;
-import com.example.dto.RefreshTokenRequest;
-import com.example.dto.user.UserCreateRequest;
+import com.example.dto.auth.AuthenticationRequest;
+import com.example.dto.auth.AuthenticationResponse;
+import com.example.dto.auth.RefreshTokenRequest;
+import com.example.dto.UserCreateRequest;
 import com.example.security.auth.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

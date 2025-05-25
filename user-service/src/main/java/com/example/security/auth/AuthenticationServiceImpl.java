@@ -1,7 +1,10 @@
 package com.example.security.auth;
 
 import com.example.dto.*;
-import com.example.dto.user.UserDto;
+import com.example.dto.UserDto;
+import com.example.dto.auth.AuthenticationRequest;
+import com.example.dto.auth.AuthenticationResponse;
+import com.example.dto.auth.RefreshTokenRequest;
 import com.example.security.jwt.JwtProvider;
 import com.example.service.UserService;
 import io.jsonwebtoken.JwtException;

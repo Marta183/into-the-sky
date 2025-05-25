@@ -1,10 +1,19 @@
 package com.example.exception;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice(annotations = RestController.class)
@@ -12,17 +21,69 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
-    protected ErrorMessage handleEntityNotFoundException(EntityNotFoundException ex) {
-        log.warn(ex.getMessage());
-        return new ErrorMessage("Not exists in DB: " + ex.getMessage());
+    public ErrorMessage handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
+        log.warn("Entity not found: {}", ex.getMessage(), ex);
+        return buildError(ex.getMessage(), request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleValidation(ConstraintViolationException ex, HttpServletRequest request) {
+        log.warn("Validation failed: {}", ex.getMessage(), ex);
+        return buildError(ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+        log.warn("Illegal argument: {}", ex.getMessage(), ex);
+        return buildError(ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorMessage illegalStateException(IllegalStateException ex, HttpServletRequest request) {
+        log.warn("Illegal state: {}", ex.getMessage(), ex);
+        return buildError(ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMessage handleUnhandled(Exception ex, HttpServletRequest request) {
+        log.error("Unhandled exception occurred", ex);
+        return buildError("Unexpected error occurred", request);
+    }
+
+    @ExceptionHandler({JwtException.class, AuthenticationException.class, BadCredentialsException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorMessage handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        log.warn("Authentication failed: {}", ex.getMessage(), ex);
+        return buildError("Invalid username or password", request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ErrorMessage handleConstraintViolationException(ConstraintViolationException ex) {
-        log.warn(ex.getMessage());
-        return new ErrorMessage(ex.getMessage());
+    public ErrorMessage handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        log.warn("Validation failed: {}", ex.getMessage());
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        return buildError("Validation failed", request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorMessage handleConflict(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.warn("Found duplicated entity: {}", ex.getMessage());
+        return buildError("Entity already exist", request);
+    }
+
+    private ErrorMessage buildError(String message, HttpServletRequest request) {
+        return new ErrorMessage(
+                Instant.now().toString(),
+                message,
+                request.getRequestURI()
+        );
     }
 }

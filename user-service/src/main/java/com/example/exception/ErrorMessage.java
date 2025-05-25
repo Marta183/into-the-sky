@@ -1,12 +1,7 @@
 package com.example.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class ErrorMessage {
-    private String message;
-}
+public record ErrorMessage (
+    String timestamp,
+    String message,
+    String path
+) { }

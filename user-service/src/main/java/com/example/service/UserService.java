@@ -1,9 +1,13 @@
 package com.example.service;
 
-import com.example.dto.user.UserCreateRequest;
-import com.example.dto.user.UserDto;
+import com.example.dto.UserCreateRequest;
+import com.example.dto.UserDto;
+
+import java.util.List;
 
 public interface UserService {
+
+    List<UserDto> findAll();
 
     UserDto createUser(UserCreateRequest req);
 
