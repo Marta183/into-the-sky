@@ -1,14 +1,12 @@
 # --- Build stage: compile and package the application using Maven ---
-FROM maven:3.8.8-openjdk-18 AS build
-#WORKDIR /app
-COPY pom.xml ./
-COPY gateway/pom.xml ./
-COPY gateway/src ./src
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /into-the-sky
+COPY . .
 RUN mvn clean package -DskipTests
 
 # --- Runtime stage: lightweight JRE for production ---
-FROM eclipse-temurin:18-jre-alpine
-#WORKDIR /app
-COPY --from=build /target/gateway-api.jar gateway-api.jar
+FROM eclipse-temurin:17-jre
+WORKDIR /into-the-sky
+COPY --from=build /into-the-sky/gateway/target/gateway-*.jar gateway.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "gateway-api.jar"]
+ENTRYPOINT ["java", "-jar", "gateway.jar"]

@@ -1,14 +1,12 @@
 # --- Build stage: compile and package the application using Maven ---
-FROM maven:3.8.8-openjdk-18 AS build
-#WORKDIR /app
-COPY pom.xml ./
-COPY user-service/pom.xml ./
-COPY user-service/src ./src
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /into-the-sky
+COPY . .
 RUN mvn clean package -DskipTests
 
 # --- Runtime stage: lightweight JRE for production ---
-FROM eclipse-temurin:18-jre-alpine
-#WORKDIR /app
-COPY --from=build /target/user-service-api.jar user-service-api.jar
+FROM eclipse-temurin:17-jre
+WORKDIR /into-the-sky
+COPY --from=build /into-the-sky/user-service/target/user-service-*.jar user-service.jar
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "user-service-api.jar"]
+ENTRYPOINT ["java", "-jar", "user-service.jar"]

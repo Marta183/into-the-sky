@@ -2,20 +2,21 @@ version: '3.8'
 services:
   discovery-server:
     build:
-      context: ./discovery-server
-      dockerfile: Dockerfile
+#      context: ./discovery-server
+      dockerfile: discovery-server/Dockerfile
     container_name: discovery-server
     ports: ['8761:8761']
     networks:
       - backend
 
-  postgres:
+  postgres-users:
     image: 'postgres:15-alpine'
-    container_name: postgres
+    container_name: postgres-users
+    restart: always
     environment:
+      POSTGRES_DB: sky_users
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: sky_users
     ports: ['5432:5432']
     volumes:
       - pgdata:/var/lib/postgresql/sky_users
@@ -24,31 +25,32 @@ services:
 
   gateway:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+#      context: ./gateway
+      dockerfile: gateway/Dockerfile
     container_name: gateway
     depends_on:
       - discovery-server
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_SECURITY_JWT_SECRET: '${SPRING_SECURITY_JWT_SECRET}'
     ports: ['8080:8080']
     networks:
       - backend
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+#      context: ./user-service
+      dockerfile: user-service/Dockerfile
     container_name: user-service
     depends_on:
       - discovery-server
-      - postgres
+      - postgres-users
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sky_users
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_SECURITY_JWT_SECRET: '${JWT_SECRET}'
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_DATASOURCE_URL: '${SPRING_DATASOURCE_URL}'
+      SPRING_DATASOURCE_USERNAME: '${SPRING_DATASOURCE_USERNAME}'
+      SPRING_DATASOURCE_PASSWORD: '${SPRING_DATASOURCE_PASSWORD}'
+      SPRING_SECURITY_JWT_SECRET: '${SPRING_SECURITY_JWT_SECRET}'
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
     ports: ['8081:8081']
     networks:
       - backend
