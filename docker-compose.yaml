@@ -1,41 +1,61 @@
 version: '3.8'
 services:
-  discovery:
-    build: ./discovery-server
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    container_name: discovery-server
     ports: ['8761:8761']
+    networks:
+      - backend
 
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:15-alpine'
+    container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sky_users
     ports: ['5432:5432']
+    volumes:
+      - pgdata:/var/lib/postgresql/sky_users
+    networks:
+      - backend
 
-  auth-service:
-    build: ./auth-service
-    depends_on: ['discovery','postgres']
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
-    ports: ['8081:8081']
-
-  user-profile-service:
-    build: ./user-profile-service
-    depends_on: ['discovery','postgres']
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_SECRET: your-jwt-secret
-      SPRING_SECURITY_JWT_SECRET: your-jwt-secret
-    ports: ['8082:8082']
-
-  api-gateway:
-    build: ./api-gateway
-    depends_on: ['discovery']
+  gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    depends_on:
+      - discovery-server
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
     ports: ['8080:8080']
+    networks:
+      - backend
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - discovery-server
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sky_users
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_JWT_SECRET: '${JWT_SECRET}'
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+    ports: ['8081:8081']
+    networks:
+      - backend
 
 networks:
-  default:
+  backend:
     driver: bridge
+volumes:
+  pgdata:
+    driver: local
