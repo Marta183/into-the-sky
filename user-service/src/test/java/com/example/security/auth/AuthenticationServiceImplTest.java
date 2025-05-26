@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -61,7 +63,7 @@ class AuthenticationServiceImplTest {
     @Test
     void signup_shouldReturnTokens_onSuccess() {
         UserCreateRequest request = new UserCreateRequest("x", "email", "pass");
-        UserDto created = new UserDto(1L, "x", "email");
+        UserDto created = new UserDto(1L, "x", "email", Set.of());
 
         Authentication auth = mock(Authentication.class);
         when(auth.getName()).thenReturn("email");

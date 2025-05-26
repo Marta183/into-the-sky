@@ -60,7 +60,7 @@ class UserControllerTest {
 
     @Test
     void findById_shouldReturnUser() throws Exception {
-        UserDto dto = new UserDto(1L, "email@example.com", "ex");
+        UserDto dto = new UserDto(1L, "email@example.com", "ex", Set.of());
         when(userService.findById(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/api/v1/users/1"))
@@ -79,8 +79,8 @@ class UserControllerTest {
 
     @Test
     void findAll_shouldReturnList() throws Exception {
-        UserDto user1 = new UserDto(1L, "a@b.com", "a");
-        UserDto user2 = new UserDto(2L, "c@d.com", "b");
+        UserDto user1 = new UserDto(1L, "a@b.com", "a", Set.of());
+        UserDto user2 = new UserDto(2L, "c@d.com", "b", Set.of());
 
         when(userService.findAll()).thenReturn(List.of(user1, user2));
 
@@ -105,7 +105,7 @@ class UserControllerTest {
     @Test
     void createUser_shouldSucceed() throws Exception {
         UserCreateRequest req = new UserCreateRequest("x@y.com", "passpass", "test");
-        UserDto res = new UserDto(3L, "x@y.com", "test");
+        UserDto res = new UserDto(3L, "x@y.com", "test", Set.of());
 
         when(userService.createUser(any())).thenReturn(res);
 

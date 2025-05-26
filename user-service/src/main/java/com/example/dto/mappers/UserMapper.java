@@ -12,7 +12,9 @@ public interface UserMapper {
 
 //    UserMapper INSTANCE = Mappers.getMapper( UserMapper.class );
 
-    @Mapping(target = "externalProjects", ignore = true)
+//    @Mapping(target = "externalProjects", ignore = true)
     User mapToEntity(UserCreateRequest dto);
+
+    @Mapping(source = "externalProjects", target = "projects")
     UserDto mapToDto(User dto);
 }

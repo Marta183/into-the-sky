@@ -44,7 +44,7 @@ class UserServiceImplTest {
         when(userMapper.mapToEntity(request)).thenReturn(user);
         when(passwordEncoder.encode("pass")).thenReturn("hashed");
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "test@email.com", "name"));
+        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "test@email.com", "name", Set.of()));
 
         UserDto result = userService.createUser(request);
 
@@ -73,7 +73,7 @@ class UserServiceImplTest {
         User user = new User();
         user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "user@example.com", "name"));
+        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "user@example.com", "name", Set.of()));
 
         UserDto result = userService.findById(1L);
         assertThat(result.id()).isEqualTo(1L);
@@ -128,7 +128,7 @@ class UserServiceImplTest {
         User user = new User(1l, "user@example.com", "passpass", "name", Set.of());
 
         when(userRepository.findAll()).thenReturn(List.of(user));
-        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "user@example.com", "name"));
+        when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "user@example.com", "name", Set.of()));
 
         List<UserDto> users = userService.findAll();
 

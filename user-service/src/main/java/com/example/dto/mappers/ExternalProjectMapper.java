@@ -8,7 +8,7 @@ import org.mapstruct.MappingConstants.ComponentModel;
 
 @Mapper(componentModel = ComponentModel.SPRING)
 public interface ExternalProjectMapper {
-//    @Mapping(target = "users", ignore = true)
+    @Mapping(target = "users", ignore = true)
     ExternalProject mapToEntity(ExternalProjectDto dto);
     ExternalProjectDto mapToDto(ExternalProject dto);
 }
