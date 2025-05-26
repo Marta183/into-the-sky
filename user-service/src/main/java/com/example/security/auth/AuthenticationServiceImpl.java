@@ -5,6 +5,7 @@ import com.example.dto.UserDto;
 import com.example.dto.auth.AuthenticationRequest;
 import com.example.dto.auth.AuthenticationResponse;
 import com.example.dto.auth.RefreshTokenRequest;
+import com.example.entity.TokenType;
 import com.example.security.jwt.JwtProvider;
 import com.example.service.UserService;
 import io.jsonwebtoken.JwtException;
@@ -17,12 +18,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional // TODO
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserService userService;
     private final JwtProvider jwtProvider;
@@ -77,14 +76,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new CredentialsExpiredException("Refresh token expired or invalid");
         }
 
-        String username;
         try {
-            username = jwtProvider.extractUsername(request.refreshToken());
-        } catch (JwtException e) {
-            log.error("Refresh token extraction failed", e.getMessage() );
+            String tokenType = jwtProvider.extractTokenType(refreshToken);
+            if (!TokenType.REFRESH.name().equals(tokenType)) {
+                log.warn("Access token used instead of refresh token");
+                throw new BadCredentialsException("Invalid token type for refresh");
+            }
+            String username = jwtProvider.extractUsername(request.refreshToken());
+            String accessToken = jwtProvider.generateAccessToken(username);
+
+            return new AuthenticationResponse(accessToken, refreshToken);
+
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Failed to refresh token: {}", e.getMessage() );
             throw new BadCredentialsException("Invalid refresh token");
         }
-        String accessToken = jwtProvider.generateAccessToken(username);
-        return new AuthenticationResponse(accessToken, refreshToken);
     }
 }

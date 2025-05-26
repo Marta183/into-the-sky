@@ -10,4 +10,6 @@ public interface JwtProvider {
     String generateRefreshToken(String username);
 
     boolean isTokenValid(String token);
+
+    String extractTokenType(String token);
 }

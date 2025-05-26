@@ -1,6 +1,7 @@
 package com.example.exception;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -54,11 +55,18 @@ public class GlobalExceptionHandler {
         return buildError("Unexpected error occurred", request);
     }
 
-    @ExceptionHandler({JwtException.class, AuthenticationException.class, BadCredentialsException.class})
+    @ExceptionHandler({JwtException.class, BadCredentialsException.class, AuthenticationException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorMessage handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+    public ErrorMessage handleBadAuth(Exception ex, HttpServletRequest request) {
         log.warn("Authentication failed: {}", ex.getMessage(), ex);
         return buildError("Invalid username or password", request);
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorMessage handleEntityExists(EntityExistsException ex) {
+        log.warn("Found duplicated entity: {}", ex.getMessage(), ex);
+        return new ErrorMessage(Instant.now().toString(),"Entity already exists: " + ex.getMessage(), "");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

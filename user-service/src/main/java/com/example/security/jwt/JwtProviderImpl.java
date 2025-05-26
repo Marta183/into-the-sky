@@ -1,5 +1,6 @@
 package com.example.security.jwt;
 
+import com.example.entity.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -43,12 +44,16 @@ public class JwtProviderImpl implements JwtProvider {
 
     @Override
     public String generateAccessToken(String username) {
-        return buildJwtToken(new HashMap<>(), username, accessTokenExpiration);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("token_type", TokenType.ACCESS.name());
+        return buildJwtToken(claims, username, accessTokenExpiration);
     }
 
     @Override
     public String generateRefreshToken(String username) {
-        return buildJwtToken(new HashMap<>(), username, refreshTokenExpiration);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("token_type", TokenType.REFRESH.name());
+        return buildJwtToken(claims, username, refreshTokenExpiration);
     }
 
     private String buildJwtToken(Map<String, Object> extraClaims, String username, long tokenExpiration) {
@@ -76,6 +81,11 @@ public class JwtProviderImpl implements JwtProvider {
     @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    @Override
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("token_type")).toString();
     }
 
     private String extractIssuer(String token) {
