@@ -100,7 +100,7 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
         ExternalProject project = getOrCreateProject(request);
 
         if (user.getExternalProjects().contains(project)) {
-            log.warn("User {} already linked to project {}", userId, project.getId());
+            log.info("User {} already linked to project {}", userId, project.getId());
             return projectMapper.mapToDto(project);
         }
 
@@ -117,12 +117,6 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("User not found with id=%d", userId)));
-    }
-
-    private ExternalProject getProjectOrThrow(String id) {
-        return projectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Project not found with id=%s", id)));
     }
 
     private ExternalProject getOrCreateProject(ExternalProjectDto dto) {

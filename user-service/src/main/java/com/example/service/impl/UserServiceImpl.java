@@ -3,14 +3,13 @@ package com.example.service.impl;
 import com.example.dto.mappers.UserMapper;
 import com.example.dto.UserCreateRequest;
 import com.example.dto.UserDto;
-import com.example.entity.ExternalProject;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
 import com.example.service.UserService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
             log.warn("User with email={} already exists", request.email());
-            throw new DataIntegrityViolationException("Email already exists");
+            throw new EntityExistsException("Email already exists");
         }
 
         User user = userMapper.mapToEntity(request);

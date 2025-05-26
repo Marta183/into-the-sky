@@ -16,11 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("removal")
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
@@ -97,8 +99,7 @@ class UserServiceImplTest {
 
     @Test
     void findAll_shouldReturnMappedUsers() {
-        User user = new User();
-        user.setId(1L);
+        User user = new User(1l, "user@example.com", "passpass", "name", Set.of());
 
         when(userRepository.findAll()).thenReturn(List.of(user));
         when(userMapper.mapToDto(user)).thenReturn(new UserDto(1L, "user@example.com", "name"));
