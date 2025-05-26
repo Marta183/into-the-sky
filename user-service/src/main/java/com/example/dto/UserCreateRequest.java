@@ -12,6 +12,6 @@ public record UserCreateRequest(
     @Size(min = 6, max = 20, message = "Password must be at least 6 characters long")
     String password,
 
-    @Size(max = 120, message = "User name is too long")
+    @Size(min = 1, max = 120, message = "User name should be more than 1 and less than 120 characters")
     String name
 ) {}

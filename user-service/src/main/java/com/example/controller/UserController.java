@@ -53,7 +53,7 @@ public class UserController {
 
     @GetMapping("/{id}/projects")
     @ResponseStatus(HttpStatus.OK)
-    public Set<ExternalProjectDto> getProjects(@PathVariable("id") Long userId) {
+    public Set<ExternalProjectDto> getUserProjects(@PathVariable("id") Long userId) {
         log.info("Getting projects for user {}", userId);
         return projectService.findProjectsByUser(userId);
     }

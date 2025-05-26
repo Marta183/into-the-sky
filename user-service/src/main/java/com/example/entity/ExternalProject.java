@@ -24,7 +24,18 @@ public class ExternalProject {
     private Set<User> users = new HashSet<>();
 
     public ExternalProject(String name) {
-        this.id   = UUID.randomUUID().toString();
+        this.id = generateId();
         this.name = name;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = generateId();
+        }
+    }
+
+    private String generateId() {
+        return UUID.randomUUID().toString();
     }
 }

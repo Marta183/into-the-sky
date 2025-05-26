@@ -80,12 +80,8 @@ public class UserServiceImpl implements UserService {
         }
         User user = userOptional.get();
 
-        if (!user.getExternalProjects().isEmpty()) {
-            log.info("Cannot delete user {} linked to projects", id);
-            throw new IllegalStateException(
-                    String.format("Cannot delete user with id=%d: linked to %d projects",
-                            id, user.getExternalProjects().size()));
-        }
+        user.getExternalProjects().clear();
+        userRepository.save(user);
 
         userRepository.deleteById(id);
         log.info("User deleted, id={}", id);

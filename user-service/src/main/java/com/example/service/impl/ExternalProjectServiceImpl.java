@@ -62,8 +62,7 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
     public ExternalProjectDto createProject(ExternalProjectDto request) {
         log.info("Creating external project: {}", request.name());
 
-        ExternalProject project = projectMapper.mapToEntity(request);
-        ExternalProject saved = projectRepository.save(project);
+        ExternalProject saved = saveProject(request);
 
         log.info("External project created with id {}", saved.getId());
         return projectMapper.mapToDto(saved);
@@ -92,10 +91,6 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
     public ExternalProjectDto addProjectToUser(Long userId, ExternalProjectDto request) {
         log.info("Binding project {} to user {}", request.id(), userId);
 
-        if (request.id() == null) {
-            throw new IllegalArgumentException("Project ID must not be null");
-        }
-
         User user = getUserOrThrow(userId);
         ExternalProject project = getOrCreateProject(request);
 
@@ -120,11 +115,18 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
     }
 
     private ExternalProject getOrCreateProject(ExternalProjectDto dto) {
-        return projectRepository.findById(dto.id())
-                .orElseGet(() -> {
-                    log.info("Creating project since it doesn't exist: {}", dto.id());
-                    return projectRepository.save(projectMapper.mapToEntity(dto));
-                });
+        if (dto.id() != null) {
+            return projectRepository.findById(dto.id())
+                    .orElseGet(() -> {
+                        log.info("Creating project since it doesn't exist: {}", dto.id());
+                        return saveProject(dto);
+                    });
+        }
+        return saveProject(dto);
+    }
+
+    private ExternalProject saveProject(ExternalProjectDto dto) {
+        return projectRepository.save(projectMapper.mapToEntity(dto));
     }
 
     private void assertProjectHasNoUsers(ExternalProject project) {
