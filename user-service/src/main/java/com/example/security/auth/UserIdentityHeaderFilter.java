@@ -26,6 +26,8 @@ public class UserIdentityHeaderFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain
             ) throws ServletException, IOException {
 
+        log.error("Second filter entered");
+
         String userEmail = request.getHeader("X-User-Email");
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -34,6 +36,8 @@ public class UserIdentityHeaderFilter extends OncePerRequestFilter {
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
+
+        log.error("Second filter passed");
 
         filterChain.doFilter(request, response);
     }

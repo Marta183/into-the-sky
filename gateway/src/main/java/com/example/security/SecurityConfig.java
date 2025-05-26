@@ -2,7 +2,6 @@ package com.example.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -20,17 +19,10 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(Customizer.withDefaults()) // CORS bean
-                .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/v1/auth/**").permitAll()
-                        .anyExchange().authenticated()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/api/v1/auth/logout")
-//                        .requiresLogout(exchange -> true)
-                        .logoutSuccessHandler((exchange, authentication) -> {
-                            exchange.getExchange().getResponse().setStatusCode(HttpStatus.OK);
-                            return exchange.getExchange().getResponse().setComplete();
-                        }))
+//                .authorizeExchange(exchange -> exchange
+//                        .pathMatchers("/api/v1/auth/**").permitAll()
+//                        .anyExchange().authenticated()
+//                )
                 .build();
     }
 

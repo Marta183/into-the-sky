@@ -3,6 +3,7 @@ package com.example.service.impl;
 import com.example.dto.UserCreateRequest;
 import com.example.dto.UserDto;
 import com.example.dto.mappers.UserMapper;
+import com.example.entity.ExternalProject;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("removal")
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
@@ -95,6 +95,32 @@ class UserServiceImplTest {
         userService.deleteUser(1L);
 
         verify(userRepository, atMostOnce()).deleteById(1L);
+    }
+
+    @Test
+    void deleteUser_shouldDoNothingIfUserNotFound() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        userService.deleteUser(999L);
+
+        verify(userRepository, never()).deleteById(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteUser_shouldClearProjectsAndDeleteUser() {
+        User user = new User();
+        user.setId(1L);
+        user.getExternalProjects().add(new ExternalProject("1"));
+        user.getExternalProjects().add(new ExternalProject("2"));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(1L);
+
+        assertThat(user.getExternalProjects()).isEmpty();
+        verify(userRepository).save(user);
+        verify(userRepository).deleteById(1L);
     }
 
     @Test

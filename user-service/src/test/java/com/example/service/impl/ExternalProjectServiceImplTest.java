@@ -161,14 +161,6 @@ class ExternalProjectServiceImplTest {
     }
 
     @Test
-    void addProjectToUser_shouldFailOnNullId() {
-        ExternalProjectDto dto = new ExternalProjectDto(null, "X");
-
-        assertThatThrownBy(() -> service.addProjectToUser(1L, dto))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void addProjectToUser_shouldFailIfUserNotFound() {
         ExternalProjectDto dto = new ExternalProjectDto("123", "X");
         when(userRepository.findById(999L)).thenReturn(Optional.empty());

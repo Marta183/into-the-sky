@@ -20,7 +20,8 @@ public class RouteConfig {
                 r.path(
                     "/api/v1/auth/**",
                     "/api/v1/users/**",
-                    "/api/v1/projects/**")
+                    "/api/v1/projects/**"
+                )
                 .filters(f -> f
                         .filter((exchange, chain) -> {
                             long start = System.currentTimeMillis();
