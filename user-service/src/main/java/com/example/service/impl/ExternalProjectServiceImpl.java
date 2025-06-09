@@ -118,7 +118,8 @@ public class ExternalProjectServiceImpl implements ExternalProjectService {
         if (dto.id() != null) {
             return projectRepository.findById(dto.id())
                     .orElseGet(() -> {
-                        log.info("Creating project since it doesn't exist: {}", dto.id());
+                        log.info("Creating project since it doesn't exist: {}", dto.name());
+                        // todo: reassign project id if empty
                         return saveProject(dto);
                     });
         }

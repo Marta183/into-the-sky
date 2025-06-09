@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
   discovery-server:
     build:
@@ -16,19 +16,19 @@ services:
       timeout: 5s
       retries: 5
 
-#  postgres-users:
-#    image: 'postgres:15-alpine'
-#    container_name: postgres_users
-#    restart: always
-#    environment:
-#      POSTGRES_DB: sky_users
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: postgres
-#    ports: ['5432:5432']
-#    volumes:
-#      - pgdata:/var/lib/postgresql/sky_users
-#    networks:
-#      - backend
+  postgres-users:
+    image: 'postgres:15-alpine'
+    container_name: postgres-users
+    restart: always
+    environment:
+      POSTGRES_DB: sky_users_docker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ['5433:5432']
+    volumes:
+      - pgdata:/var/lib/postgresql/sky_users
+    networks:
+      - backend
 
   gateway:
     build:
@@ -57,7 +57,8 @@ services:
     depends_on:
       discovery-server:
         condition: service_healthy
-#      - postgres-users
+      postgres-users:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: '${SPRING_DATASOURCE_URL}'
       SPRING_DATASOURCE_USERNAME: '${SPRING_DATASOURCE_USERNAME}'
